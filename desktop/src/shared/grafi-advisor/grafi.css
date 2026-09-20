@@ -1,0 +1,289 @@
+.grafi-advisor,
+.grafi-settings {
+  --grafi-bg: #0a0a0a;
+  --grafi-green: #a6ff00;
+  --grafi-green-glow: rgba(166, 255, 0, 0.35);
+  --grafi-green-border: rgba(166, 255, 0, 0.28);
+  --grafi-text: #b8b8b8;
+  --grafi-text-muted: #888;
+  --grafi-surface: #141414;
+  --grafi-surface-elevated: #1a1a1a;
+  --grafi-severity-info: #7eb8da;
+  --grafi-severity-success: #a6ff00;
+  --grafi-severity-warning: #fdd663;
+  --grafi-severity-critical: #f28b82;
+  --grafi-transition: 200ms ease;
+  --grafi-edge-inset: max(1rem, env(safe-area-inset-bottom, 0px));
+  --grafi-edge-inset-left: max(1rem, env(safe-area-inset-left, 0px));
+}
+
+.grafi-advisor-portal {
+  position: static;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.grafi-advisor-portal > * {
+  pointer-events: auto;
+}
+
+.grafi-advisor {
+  color: var(--grafi-text);
+  font-size: 0.9rem;
+  z-index: 80;
+}
+
+.grafi-advisor--placement-bottom-left {
+  position: fixed;
+  bottom: var(--grafi-edge-inset);
+  left: var(--grafi-edge-inset-left);
+  max-width: min(26rem, calc(100vw - 2 * var(--grafi-edge-inset-left)));
+  pointer-events: none;
+}
+
+.grafi-advisor--placement-bottom-left > * {
+  pointer-events: auto;
+}
+
+.grafi-advisor--placement-static {
+  position: relative;
+  max-width: 24rem;
+}
+
+.grafi-advisor--motion {
+  transition: opacity var(--grafi-transition);
+}
+
+.grafi-advisor--info {
+  --grafi-severity-accent: var(--grafi-severity-info);
+}
+
+.grafi-advisor--success {
+  --grafi-severity-accent: var(--grafi-severity-success);
+}
+
+.grafi-advisor--warning {
+  --grafi-severity-accent: var(--grafi-severity-warning);
+}
+
+.grafi-advisor--critical {
+  --grafi-severity-accent: var(--grafi-severity-critical);
+}
+
+/* Bubble layout — robot bottom-left, panel expands right/up */
+.grafi-bubble {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.grafi-bubble--expanded {
+  align-items: flex-end;
+}
+
+.grafi-bubble__figure-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.grafi-bubble__figure-wrap {
+  line-height: 0;
+}
+
+.grafi-bubble__figure-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 12px;
+  line-height: 0;
+}
+
+.grafi-bubble__figure-btn:hover .grafi-figure {
+  border-color: rgba(166, 255, 0, 0.4);
+}
+
+.grafi-bubble__figure-btn:focus-visible {
+  outline: 2px solid var(--grafi-green);
+  outline-offset: 2px;
+}
+
+.grafi-bubble__figure-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.grafi-bubble__panel {
+  position: relative;
+  width: min(18rem, calc(100vw - 7.5rem));
+  margin-bottom: 2.5rem;
+  background: var(--grafi-surface);
+  border: 1px solid var(--grafi-green-border);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+}
+
+.grafi-bubble__panel::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  bottom: 28px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 8px solid var(--grafi-surface);
+}
+
+.grafi-bubble__panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.grafi-bubble__dismiss {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--grafi-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.grafi-bubble__dismiss:hover {
+  color: var(--grafi-text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.grafi-bubble__dismiss:focus-visible {
+  outline: 2px solid var(--grafi-green);
+  outline-offset: 2px;
+}
+
+.grafi-bubble__context-label {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--grafi-text-muted);
+}
+
+.grafi-bubble__context-detail {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  color: var(--grafi-text-muted);
+}
+
+.grafi-bubble__message {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.grafi-bubble__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.grafi-bubble__action {
+  padding: 0.35rem 0.7rem;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--grafi-surface-elevated);
+  color: var(--grafi-text);
+}
+
+.grafi-bubble__action:focus-visible {
+  outline: 2px solid var(--grafi-green);
+  outline-offset: 2px;
+}
+
+.grafi-bubble__action--primary {
+  border-color: var(--grafi-green-border);
+  color: var(--grafi-green);
+}
+
+.grafi-bubble__action--danger {
+  border-color: rgba(242, 139, 130, 0.4);
+  color: var(--grafi-severity-critical);
+}
+
+.grafi-bubble__action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Status badge */
+.grafi-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid currentColor;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.grafi-status-badge--info {
+  color: var(--grafi-severity-info);
+}
+
+.grafi-status-badge--success {
+  color: var(--grafi-severity-success);
+}
+
+.grafi-status-badge--warning {
+  color: var(--grafi-severity-warning);
+}
+
+.grafi-status-badge--critical {
+  color: var(--grafi-severity-critical);
+}
+
+.grafi-status-badge__icon {
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+/* Settings panel */
+.grafi-settings {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: var(--grafi-surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grafi-advisor--motion {
+    transition: none;
+  }
+}
+
+.grafi-advisor--motion-off .grafi-advisor--motion {
+  transition: none;
+}

@@ -1,0 +1,152 @@
+.wake-transition {
+  --wake-bg: #0a0a0a;
+  --wake-green: #a6ff00;
+  --wake-green-glow: rgba(166, 255, 0, 0.45);
+  --wake-green-soft: rgba(166, 255, 0, 0.12);
+  --wake-text: #b8b8b8;
+  --wake-screen-bg: rgba(8, 10, 8, 0.8);
+  --wake-fade-in-ms: 300ms;
+  --wake-fade-out-ms: 400ms;
+  --wake-projector-top: 17%;
+  --wake-projector-left: 5.5%;
+  --wake-projector-width: 44%;
+  --wake-projector-height: 54%;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wake-bg);
+  opacity: 0;
+  transition: opacity var(--wake-fade-out-ms) ease-out;
+}
+
+.wake-transition--enter {
+  opacity: 1;
+  transition: opacity var(--wake-fade-in-ms) ease-in;
+}
+
+.wake-transition--fading {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--wake-fade-out-ms) ease-out;
+}
+
+.wake-transition__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.wake-transition__video--hidden {
+  display: none;
+}
+
+.wake-transition__projector-anchor {
+  position: absolute;
+  top: var(--wake-projector-top);
+  left: var(--wake-projector-left);
+  width: var(--wake-projector-width);
+  height: var(--wake-projector-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.wake-transition__projector-screen {
+  width: 100%;
+  height: 100%;
+  padding: 0.65rem 0.75rem;
+  box-sizing: border-box;
+  background: var(--wake-screen-bg);
+  backdrop-filter: blur(1px);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow: hidden;
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+  color: var(--wake-green);
+  text-shadow: 0 0 6px var(--wake-green-glow);
+}
+
+.wake-transition__project-title {
+  margin: 0;
+  font-size: clamp(0.78rem, 1.7vw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--wake-green);
+  text-shadow: 0 0 8px var(--wake-green-glow), 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.wake-transition__terminal {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  font-size: clamp(0.58rem, 1.2vw, 0.72rem);
+  line-height: 1.35;
+  color: var(--wake-text);
+}
+
+.wake-transition__terminal-line {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.wake-transition__slow-startup {
+  margin: 0.35rem 0 0;
+  font-size: clamp(0.58rem, 1.2vw, 0.72rem);
+  line-height: 1.35;
+  color: var(--wake-green);
+  letter-spacing: 0.04em;
+}
+
+.wake-transition__skip {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 2;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid rgba(166, 255, 0, 0.28);
+  border-radius: 4px;
+  background: rgba(10, 10, 10, 0.72);
+  color: var(--wake-text);
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.wake-transition__skip:hover {
+  border-color: rgba(166, 255, 0, 0.5);
+  color: var(--wake-green);
+  box-shadow: 0 0 8px var(--wake-green-soft);
+}
+
+.wake-transition__skip:focus-visible {
+  outline: 2px solid var(--wake-green);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wake-transition,
+  .wake-transition--enter,
+  .wake-transition--fading {
+    transition-duration: 150ms;
+  }
+}

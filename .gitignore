@@ -1,0 +1,58 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node / Vite
+desktop/node_modules/
+desktop/dist/
+desktop/.vite/
+
+# Rust / Tauri
+desktop/src-tauri/runtime/*
+!desktop/src-tauri/runtime/.gitkeep
+desktop/src-tauri/target/
+
+# Local runtime data
+logs/
+desktop/logs/
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# Build artifacts
+packaging/cache/
+*.msi
+*.exe
+*.zip
+*.7z
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.cursor/
+.claude/
+
+# Legacy repo-root GrafiTalk export folder (the inbox now lives in the data folder)
+/grafitalk/
+
+!packaging/grafi-source.jpg
+
+# Personal local config — not the app's real config dir (that's
+# %LOCALAPPDATA%\Graf-Id or GRAFID_DATA_DIR); a stray dev-time copy must never be committed.
+/config.json
+
+# Personal developer scratch note, not public-facing project content.
+/NEXT.md
+
+# Stray dev-time copy of the app config (defaults only); the real one is in the data folder.
+/desktop/config.json

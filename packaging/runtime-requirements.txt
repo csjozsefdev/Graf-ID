@@ -1,0 +1,11 @@
+# Locked production deps for packaging/build_runtime.ps1 (generated from runtime-requirements.in).
+# Regenerate: pip install typer==0.25.1 --target <tmpdir> && pip freeze --path <tmpdir>
+annotated-doc==0.0.4
+click==8.4.1
+colorama==0.4.6
+markdown-it-py==4.2.0
+mdurl==0.1.2
+Pygments==2.20.0
+rich==15.0.0
+shellingham==1.5.4
+typer==0.25.1

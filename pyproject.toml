@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graf-id"
+version = "1.0.0"
+description = "Local-first workflow continuity utility for developers"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Graf-Id Contributors" }]
+dependencies = [
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+graf-id = "grafid.cli.main:main"
+grafid = "grafid.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["grafid*"]
+
+[tool.pytest.ini_options]
+testpaths = ["grafid/tests"]
+pythonpath = ["."]
+# Setting norecursedirs REPLACES pytest's defaults, so they are repeated here.
+# `desktop` holds the Tauri/Node project including the bundled Python runtimes
+# (desktop/src-tauri/runtime, target/*/runtime); an accidental `pytest .` used to
+# recurse into them and collect CPython's own test suite (40,000+ tests).
+norecursedirs = [
+    ".*", "*.egg", "*.egg-info", "_darcs", "{arch}", "CVS",
+    "build", "dist", "venv", "node_modules", "target",
+    "desktop", "site-packages",
+]

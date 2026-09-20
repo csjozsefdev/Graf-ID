@@ -1,0 +1,2 @@
+# Production runtime dependencies for embedded Python (keep in sync with pyproject.toml).
+typer==0.25.1

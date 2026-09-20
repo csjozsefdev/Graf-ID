@@ -1,0 +1,141 @@
+.grafi-splash {
+  --grafi-bg: #0a0a0a;
+  --grafi-green: #a6ff00;
+  --grafi-green-glow: rgba(166, 255, 0, 0.45);
+  --grafi-text: #b8b8b8;
+  --grafi-ring-size: 79%;
+  --grafi-ring-thickness: 3px;
+  --grafi-highlight-length: 24deg;
+  --grafi-spin-duration: 1500ms;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--grafi-bg);
+  opacity: 1;
+  transition: opacity var(--grafi-fade-out-ms, 400ms) ease-out;
+}
+
+.grafi-splash--fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.grafi-splash__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: min(100%, 22rem);
+}
+
+.grafi-splash__visual {
+  position: relative;
+  width: min(280px, 72vw);
+  aspect-ratio: 1;
+}
+
+.grafi-splash__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.grafi-splash__ring-positioner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--grafi-ring-size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.grafi-splash__ring-highlight {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform-origin: center center;
+  /* Leading edge starts at 12 o'clock; element rotates clockwise below */
+  background: conic-gradient(
+    from -90deg,
+    rgba(166, 255, 0, 0.55) 0deg,
+    rgba(166, 255, 0, 0.35) calc(var(--grafi-highlight-length) * 0.45),
+    rgba(166, 255, 0, 0.08) calc(var(--grafi-highlight-length) - 4deg),
+    transparent var(--grafi-highlight-length),
+    transparent 360deg
+  );
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent calc(50% - var(--grafi-ring-thickness)),
+    #000 calc(50% - var(--grafi-ring-thickness) + 0.5px),
+    #000 calc(50% + 0.5px),
+    transparent calc(50% + var(--grafi-ring-thickness))
+  );
+  mask: radial-gradient(
+    circle,
+    transparent calc(50% - var(--grafi-ring-thickness)),
+    #000 calc(50% - var(--grafi-ring-thickness) + 0.5px),
+    #000 calc(50% + 0.5px),
+    transparent calc(50% + var(--grafi-ring-thickness))
+  );
+  filter: drop-shadow(0 0 3px var(--grafi-green-glow));
+  pointer-events: none;
+}
+
+.grafi-splash__ring-highlight--spinning {
+  opacity: 1;
+  animation: grafi-ring-spin var(--grafi-spin-duration) linear 1 forwards;
+}
+
+.grafi-splash__ring-highlight--idle {
+  opacity: 0;
+  transform: rotate(90deg);
+}
+
+.grafi-splash__message {
+  margin: 0;
+  color: var(--grafi-text);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.grafi-splash__message-dots {
+  display: inline-block;
+  min-width: 1.25em;
+  text-align: left;
+}
+
+@keyframes grafi-ring-spin {
+  from {
+    transform: rotate(90deg);
+  }
+
+  to {
+    transform: rotate(450deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grafi-splash {
+    transition-duration: 150ms;
+  }
+
+  .grafi-splash__ring-highlight--spinning {
+    animation: none;
+    opacity: 0;
+  }
+
+  .grafi-splash__ring-highlight--idle {
+    opacity: 0;
+  }
+}
