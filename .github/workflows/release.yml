@@ -1,0 +1,174 @@
+name: Release
+
+# Builds the Windows installers from the tagged source on a GitHub-hosted runner,
+# signs them through SignPath when it is configured, and creates a DRAFT GitHub
+# Release. Nothing is published automatically: a maintainer reviews the draft and
+# presses Publish. See docs/RELEASING.md.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.12.10" # must match RequiredPythonVersion in packaging/build_runtime.ps1
+
+jobs:
+  build:
+    name: Build installers (unsigned)
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read version
+        id: meta
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path pyproject.toml -Pattern '^version = "(.+)"').Matches[0].Groups[1].Value
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "Tag $env:GITHUB_REF_NAME does not match the project version $version"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Prepare build environment
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .venv\Scripts\python.exe -m pip install -q -e ".[dev]"
+          Push-Location desktop
+          npm ci
+          Pop-Location
+
+      - name: Build release
+        shell: pwsh
+        run: |
+          # Keep the runner's account and checkout paths out of the shipped binary.
+          $up = $env:USERPROFILE
+          $env:RUSTFLAGS = "--remap-path-prefix=$up\.cargo=/cargo --remap-path-prefix=$up\.rustup=/rustup --remap-path-prefix=$env:GITHUB_WORKSPACE=/src"
+          packaging\build_release.ps1
+
+      - name: Collect installers
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist-release | Out-Null
+          Copy-Item desktop\src-tauri\target\release\bundle\nsis\*.exe dist-release\
+          Copy-Item desktop\src-tauri\target\release\bundle\msi\*.msi dist-release\
+          Get-ChildItem dist-release | Select-Object Name, Length
+
+      - name: Upload unsigned installers
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: installers-unsigned
+          path: dist-release/*
+          if-no-files-found: error
+
+  sign:
+    name: Sign installers (SignPath)
+    needs: build
+    # Runs only once the SignPath organization is configured (repository variable).
+    if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Submit signing request
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'graf-id' }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
+          github-artifact-id: ${{ needs.build.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+
+      - name: Upload signed installers
+        uses: actions/upload-artifact@v7
+        with:
+          name: installers-signed
+          path: signed
+          if-no-files-found: error
+
+  release:
+    name: Draft GitHub Release
+    needs: [build, sign]
+    if: ${{ always() && needs.build.result == 'success' && (needs.sign.result == 'success' || needs.sign.result == 'skipped') }}
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+      SIGNED: ${{ needs.sign.result == 'success' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.sign.result == 'success' && 'installers-signed' || 'installers-unsigned' }}
+          path: incoming
+
+      - name: Assemble release files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-files | Out-Null
+          Get-ChildItem incoming -Recurse -Filter *.zip | ForEach-Object { Expand-Archive $_.FullName incoming\expanded -Force }
+          Get-ChildItem incoming -Recurse -File |
+            Where-Object { $_.Extension -in '.exe', '.msi' } |
+            ForEach-Object { Copy-Item $_.FullName release-files\ }
+          $installers = Get-ChildItem release-files -File
+          if ($installers.Count -ne 2) { throw "Expected 2 installers, found $($installers.Count)" }
+
+          foreach ($file in $installers) {
+            $status = (Get-AuthenticodeSignature $file.FullName).Status
+            Write-Host "$($file.Name): $status"
+            if ($env:SIGNED -eq 'true' -and $status -ne 'Valid') { throw "$($file.Name) is not validly signed ($status)" }
+          }
+
+          $lines = $installers | Sort-Object Name | ForEach-Object {
+            "{0} *{1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name
+          }
+          $lines | Set-Content -Path release-files\SHA256SUMS.txt -Encoding ascii
+          Get-Content release-files\SHA256SUMS.txt
+
+      - name: Write release notes
+        shell: pwsh
+        run: |
+          python packaging\release_notes.py $env:VERSION | Set-Content -Path notes.md -Encoding utf8
+          Add-Content notes.md "`n## Verify your download`n"
+          Add-Content notes.md "SHA-256 checksums are in ``SHA256SUMS.txt`` (``Get-FileHash <file> -Algorithm SHA256``)."
+          if ($env:SIGNED -eq 'true') {
+            Add-Content notes.md "`nThe installers are Authenticode-signed. Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org). See the [code signing policy](https://github.com/$env:GITHUB_REPOSITORY/blob/main/docs/CODE_SIGNING_POLICY.md)."
+          } else {
+            Add-Content notes.md "`nThese installers are **not code-signed**, so Windows SmartScreen may warn on first run. Check the checksums above."
+          }
+
+      - name: Create draft release
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem release-files -File | ForEach-Object { $_.FullName }
+          gh release create "v$env:VERSION" --draft --title "Graf-Id $env:VERSION" --notes-file notes.md --target $env:GITHUB_SHA @files

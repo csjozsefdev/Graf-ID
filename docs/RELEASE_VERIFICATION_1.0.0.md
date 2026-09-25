@@ -2,9 +2,11 @@
 
 Measured results of the 1.0.0 release build (Windows, x64). The build procedure itself is described in [RELEASE_VERIFICATION.md](RELEASE_VERIFICATION.md).
 
-This file is part of the release commit, so it cannot contain that commit's own hash; the `v1.0.0` tag identifies the commit. The installers were built from this tree with only this file absent (documentation is not a bundle input: Tauri bundles `runtime/` plus the built frontend and the Rust binary).
+This file is part of the release commit, so it cannot contain that commit's own hash; the `v1.0.0` tag identifies the commit. The reference build below was made from this tree with only documentation files absent (documentation is not a bundle input: Tauri bundles `runtime/`, the license files, the built frontend and the Rust binary).
 
-## Build environment
+The installers attached to the GitHub Release are built by the [release workflow](../.github/workflows/release.yml) from the tagged commit; their SHA-256 checksums are in the `SHA256SUMS.txt` attached to the release. Builds are not bit-for-bit reproducible, so the checksums of the local reference build below differ from the published files.
+
+## Build environment (reference build)
 
 | Item | Value |
 |------|-------|
@@ -22,53 +24,60 @@ From a clean checkout (no `node_modules`, `target/`, `.venv` or runtime output):
 2. `npm ci` in `desktop/`
 3. `packaging\build_release.ps1` (icons, embedded runtime, `verify_packaged_runtime.ps1`, `tauri build`, bundled-runtime manifest comparison, `verify_release_bundle.ps1`)
 
-The Rust build ran with `RUSTFLAGS` set to `--remap-path-prefix` for the cargo home, the rustup home and the checkout directory, so the shipped binary does not embed the builder's Windows account name or checkout path.
+The Rust build ran with `RUSTFLAGS` set to `--remap-path-prefix` for the cargo home, the rustup home and the checkout directory, so the shipped binary does not embed the builder's Windows account name or checkout path. The release workflow does the same.
 
-## Artifacts
+## Reference build artifacts
 
 | File | Size (bytes) | SHA-256 |
 |------|-------------:|---------|
-| `Graf-Id_1.0.0_x64-setup.exe` (NSIS) | 15,227,352 | `e56957f91adde31edf73d83d47e016da6ac6b0ae2281d610a39b8ffceaeb9c47` |
-| `Graf-Id_1.0.0_x64_en-US.msi` (MSI) | 23,180,040 | `d976f7a2a5e3c7a80ab7ff7f93f05a08b39697c43d21505e71595e8d48bc9b6e` |
-| `graf-id-desktop.exe` (binary inside both) | 10,515,456 | `0e531dec88f314663188f75f097f063c7cad33b38f8ac632c3d89cd8aebd3d09` |
+| `Graf-Id_1.0.0_x64-setup.exe` (NSIS) | 15,268,156 | `5c9f2bda1653d0b28c6ce7eafa7489dfd7f7d521b21f1454f508c954e51d85fc` |
+| `Graf-Id_1.0.0_x64_en-US.msi` (MSI) | 23,258,268 | `254f729514055409483635492faeef0fba4a35896094ffb8a9ce26c94412401d` |
+| `graf-id-desktop.exe` (binary inside both) | 10,515,456 | `4bf667ef5abd03de3f36c0ff0db3d05b6359b177a785d3359a7ffb51fab4f8a2` |
 
 Verify a download with `Get-FileHash <file> -Algorithm SHA256`.
 
-The installers are **not code-signed** (`Get-AuthenticodeSignature` reports `NotSigned`); Windows SmartScreen may warn on first run.
+The installers are **not code-signed** yet; Windows SmartScreen may warn on first run. See [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md).
 
-## Test results (on the exact release tree)
+## Test results (on this tree)
 
 | Check | Result |
 |-------|--------|
-| Python suite (`pytest`) | 825 passed |
-| Frontend suite (`vitest`) | 196 passed in 35 files |
+| Python suite (`pytest`) | 832 passed |
+| Frontend suite (`vitest`) | 196 passed in 35 files (see note) |
 | TypeScript (`tsc --noEmit`) | clean |
-| Frontend production build | OK |
 | `knip` (unused code) | clean |
 | `npm audit --audit-level=high` | 0 vulnerabilities |
 | `cargo test --locked` | 23 passed |
 | `cargo check --locked` | OK |
 | Version consistency test | passed (pyproject, `grafid.__version__`, `package.json`, `package-lock.json`, `tauri.conf.json`, `Cargo.toml`, `Cargo.lock`) |
 | Command-surface contract test (TypeScript client / Rust handlers / Python table) | passed |
+| Third-party notices and license wiring tests | passed |
+
+Note: in one of seven local runs of the frontend suite a single test failed on a cold start and passed on every rerun; the test was not identified.
 
 ## Release bundle checks
 
 | Check | Result |
 |-------|--------|
-| Bundled runtime equals the freshly built runtime | 2,523 files, no differences |
+| Bundled runtime equals the freshly built runtime | no differences |
 | Packaged runtime smoke (`health`, `runtime-check`, `bootstrap`, `dashboard`) | ok |
 | Release binary launch with an isolated data folder | ok, database created |
-| Runtime bytecode | 1,207 `.pyc`, all `cpython-312` |
+| Runtime bytecode | all `cpython-312` |
 | CPython `Lib/test`, `idlelib`, `tkinter`, `ensurepip`, `grafid/tests` in the runtime | absent |
-| Builder account name / checkout path in the binary | 0 occurrences |
-| Builder account name / checkout path in the bundled runtime | 0 occurrences |
+| Builder account name / checkout path in the binary and in the bundled runtime | 0 occurrences |
+| `LICENSE`, `THIRD_PARTY_NOTICES.md` installed next to the app; `runtime\LICENSE-PYTHON.txt` in the runtime | present in the MSI (extracted and listed) and in the NSIS install script |
+
+## License notices
+
+`THIRD_PARTY_NOTICES.md` covers CPython, 9 Python packages, 7 JavaScript packages and 237 Rust crates (normal dependencies of the Windows target). Five MPL-2.0 crates are used unmodified and listed with their source locations; no GPL or LGPL component is included. It is generated by `packaging/generate_third_party_notices.py`.
 
 ## Real-world smoke
 
-40 of 40 checks passed against a scratch copy of a populated database (never the live one): open project with a custom editor, session start and Exit Note, *Where you left off* and Project Snapshot, git clean/dirty detection, coding-agent resolution, all four export formats for four projects with GrafiTalk-contract validation and path/venv leak checks, inbox export, context import, and backup / restore round trip with an integrity check.
+40 of 40 checks passed against a scratch copy of a populated database (never the live one) on the previous build of this code: open project with a custom editor, session start and Exit Note, *Where you left off* and Project Snapshot, git clean/dirty detection, coding-agent resolution, all four export formats for four projects with GrafiTalk-contract validation and path/venv leak checks, inbox export, context import, and backup / restore round trip with an integrity check. The application code did not change since.
 
 ## Not verified
 
 - The installers were not installed on a separate clean machine; the uninstall/reinstall checklist is [UNINSTALL_REINSTALL_CHECKLIST_1.0.0.md](UNINSTALL_REINSTALL_CHECKLIST_1.0.0.md).
 - The Docker test environment (`docs/DOCKER.md`) was not run for this release.
 - CI runs on `windows-latest` only.
+- The release workflow itself (build on a GitHub runner, draft release) has not run yet; code signing is not set up.

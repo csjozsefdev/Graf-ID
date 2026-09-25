@@ -216,6 +216,13 @@ foreach ($name in $binaryNames) {
     }
 }
 
+# CPython's license (PSF) must travel with the interpreter it covers.
+$pythonLicense = Join-Path $Base "LICENSE.txt"
+if (-not (Test-Path $pythonLicense)) {
+    throw "CPython LICENSE.txt not found in the base Python install: $pythonLicense"
+}
+Copy-Item -Force $pythonLicense (Join-Path $OutputDir "LICENSE-PYTHON.txt")
+
 # Extension modules. Test-only modules and the Tk runtime (Tkinter is never used
 # by Graf-Id, and this layout has no tcl/ data directory for it anyway) stay out.
 $dlls = Join-Path $Base "DLLs"
@@ -370,6 +377,7 @@ foreach ($rel in @("Lib\turtle.py", "DLLs\_tkinter.pyd", "DLLs\tcl86t.dll", "DLL
 }
 Get-ChildItem -Path (Join-Path $OutputDir "DLLs") -Filter "_test*.pyd" -ErrorAction SilentlyContinue |
     ForEach-Object { $violations.Add("test extension module shipped: DLLs\$($_.Name)") }
+if (-not (Test-Path (Join-Path $OutputDir "LICENSE-PYTHON.txt"))) { $violations.Add("missing license: LICENSE-PYTHON.txt") }
 $expectedTag = "cpython-$Ver"
 Get-ChildItem -Path $OutputDir -Recurse -File -Filter "*.pyc" -Force | ForEach-Object {
     if ($_.Name -notlike "*.$expectedTag.pyc") {
