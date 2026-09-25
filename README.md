@@ -297,6 +297,8 @@ Detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | [docs/PACKAGED_USAGE.md](docs/PACKAGED_USAGE.md) | Running the packaged app |
 | [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md) | What the automated release-bundle checks cover |
 | [docs/RELEASE_VERIFICATION_1.0.0.md](docs/RELEASE_VERIFICATION_1.0.0.md) | Results and checksums of the 1.0.0 release build |
+| [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md) | How Windows installers are built and signed, and the privacy policy |
+| [docs/RELEASING.md](docs/RELEASING.md) | Maintainers: cutting a release, SignPath setup |
 | [docs/UNINSTALL_REINSTALL_CHECKLIST_1.0.0.md](docs/UNINSTALL_REINSTALL_CHECKLIST_1.0.0.md) | Manual uninstall/reinstall and data-persistence checklist |
 
 ---
@@ -309,6 +311,10 @@ cd desktop && npm test
 ```
 
 ---
+
+## Code signing policy
+
+The Windows installers are not code-signed yet; check the SHA-256 checksums attached to each release. Signed releases will follow the [code signing policy](docs/CODE_SIGNING_POLICY.md) once free code signing for open-source projects is granted (free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org), applies from that release on).
 
 ## License
 
