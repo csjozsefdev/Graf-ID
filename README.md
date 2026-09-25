@@ -312,4 +312,4 @@ cd desktop && npm test
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). The installers also contain third-party software (the embedded Python interpreter, Python packages, JavaScript packages and Rust crates), each under its own license; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), which is installed next to the app as well.

@@ -44,7 +44,9 @@
       "icons/icon.ico"
     ],
     "resources": {
-      "runtime/": "runtime/"
+      "runtime/": "runtime/",
+      "../../LICENSE": "LICENSE.txt",
+      "../../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md"
     }
   }
 }
