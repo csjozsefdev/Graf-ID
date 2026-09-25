@@ -39,7 +39,7 @@ def test_notices_file_has_the_core_license_texts() -> None:
 def test_installer_ships_the_license_files() -> None:
     conf = json.loads((REPO_ROOT / "desktop" / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8"))
     resources = conf["bundle"]["resources"]
-    assert resources["../../LICENSE"] == "LICENSE.txt"
+    assert resources["../../LICENSE"] == "LICENSE"
     assert resources["../../THIRD_PARTY_NOTICES.md"] == "THIRD_PARTY_NOTICES.md"
     assert (REPO_ROOT / "LICENSE").is_file()
 
