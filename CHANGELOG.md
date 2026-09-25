@@ -4,7 +4,7 @@ All notable changes to Graf-Id are documented in this file.
 
 Versions before 1.0.0 (0.1.x) were development builds and were never published from this repository; their entries are kept below as project history.
 
-## [1.0.0] — 2026-09-20
+## [1.0.0] — 2026-09-25
 
 First public release.
 
@@ -21,6 +21,8 @@ First public release.
 - **Clean Rust build cache** — detect and clean `target/` directories for registered Rust projects from the dashboard; the target directory is always passed explicitly, so a developer's own `CARGO_TARGET_DIR` override can never cause the wrong directory to be cleaned or sized
 - **Dockerized, reproducible build/test environment** — a `Dockerfile` (`test` and `rust-check` targets) that runs the full Python suite, the frontend suite/build/typecheck, and `cargo check`/`cargo test` without any host setup; see `docs/DOCKER.md`
 - **In-app version and license info** — Settings now shows the app version, license, and repository link
+- **Third-party license notices** — `THIRD_PARTY_NOTICES.md` lists and reproduces the licenses of everything the installers contain (CPython, Python packages, JavaScript packages, Rust crates). It is installed next to the app together with `LICENSE`, and CPython's license ships inside the embedded runtime; the runtime build fails without it
+- **Release workflow and code signing policy** — a GitHub Actions workflow builds the Windows installers from a version tag and creates a *draft* GitHub Release with SHA-256 checksums; signing through the SignPath Foundation is prepared (`docs/CODE_SIGNING_POLICY.md`, `docs/RELEASING.md`, `signpath/artifact-configuration.xml`) and takes effect once the project is approved. The installers are not code-signed yet
 
 ### Changed
 
@@ -52,6 +54,7 @@ First public release.
 - **GrafiTalk handoff quality** — `next_steps` was always empty while "Suggested next step" and scanner junk landed in `changes`; the handoff is now built from structured context
 - **GrafiTalk inbox** — no longer defaults to the source checkout (unwritable in an installed app), and its manifest no longer contains absolute user paths
 - `grafid.__version__` still reported 0.1.0
+- **Icon step without Pillow** — `packaging/create_icons.ps1` continued after a Python traceback and aborted on clean machines; it now keeps the committed icons when Pillow is not installed
 
 ### Security and reliability
 
